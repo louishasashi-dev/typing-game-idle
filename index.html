@@ -1,0 +1,1418 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Typing Coin Rush - Auto Save Game</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      body {
+        background: linear-gradient(145deg, #0b2b26 0%, #0a1f1c 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        font-family: "Poppins", "Segoe UI", "Courier New", monospace;
+        margin: 0;
+        padding: 20px;
+      }
+
+      .game-container {
+        max-width: 1100px;
+        width: 100%;
+        background: rgba(22, 40, 38, 0.75);
+        backdrop-filter: blur(8px);
+        border-radius: 3rem;
+        padding: 1.5rem;
+        box-shadow:
+          0 25px 45px rgba(0, 0, 0, 0.5),
+          inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 215, 120, 0.4);
+        position: relative;
+      }
+
+      /* ===== STATS PANEL ===== */
+      .stats-panel {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        background: #0d2c27;
+        border-radius: 2rem;
+        padding: 0.8rem 1.5rem;
+        margin-bottom: 1.2rem;
+        gap: 10px;
+        box-shadow:
+          inset 0 1px 3px rgba(0, 0, 0, 0.5),
+          0 5px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      .stat {
+        background: #1f3e39;
+        padding: 0.5rem 1.2rem;
+        border-radius: 2rem;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #f9e0a8;
+        box-shadow:
+          inset 0 1px 2px rgba(0, 0, 0, 0.3),
+          0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .stat span:first-child {
+        font-size: 1rem;
+        letter-spacing: 1px;
+      }
+
+      .stat .value {
+        font-size: 1.6rem;
+        font-weight: 800;
+        font-family: monospace;
+        color: #ffd966;
+        text-shadow: 0 0 4px #b97f10;
+      }
+
+      /* ===== COMBO BAR ===== */
+      .combo-bar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 1rem;
+        min-height: 44px;
+      }
+
+      .combo-display {
+        background: #1a3c36;
+        border-radius: 2rem;
+        padding: 0.5rem 1.5rem;
+        font-weight: 800;
+        font-size: 1.1rem;
+        color: #ffd966;
+        border: 2px solid #ffd96655;
+        transition: all 0.2s;
+        text-align: center;
+      }
+
+      .combo-display.combo-active {
+        border-color: #ff9900;
+        color: #ffb700;
+        text-shadow: 0 0 8px #ff990099;
+      }
+
+      .combo-display.combo-x2 {
+        border-color: #ff7700;
+        color: #ffaa00;
+        background: #2a3016;
+      }
+      .combo-display.combo-x3 {
+        border-color: #ff5500;
+        color: #ff8800;
+        background: #3a2010;
+        text-shadow: 0 0 12px #ff550077;
+      }
+
+      .wpm-display {
+        background: #1a3c36;
+        border-radius: 2rem;
+        padding: 0.5rem 1.2rem;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #a5f0c0;
+        border: 2px solid #a5f0c033;
+      }
+
+      /* ===== SHOP ===== */
+      .shop {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      .shop-btn {
+        background: #2c4a44;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 60px;
+        font-weight: bold;
+        font-size: 0.9rem;
+        color: #ffefc0;
+        cursor: pointer;
+        transition: 0.2s;
+        box-shadow: 0 5px 0 #0e2b25;
+        font-family: inherit;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .shop-btn:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 #0e2b25;
+      }
+
+      .shop-btn:disabled {
+        opacity: 0.5;
+        transform: none;
+        cursor: not-allowed;
+        box-shadow: 0 5px 0 #0e2b25;
+      }
+
+      /* ===== TYPING AREA ===== */
+      .typing-area {
+        background: #071d1a;
+        border-radius: 2rem;
+        padding: 1.8rem;
+        margin: 10px 0;
+        box-shadow:
+          inset 0 0 10px #00000055,
+          0 10px 20px rgba(0, 0, 0, 0.3);
+        position: relative;
+      }
+
+      .sentence-display {
+        background: #0e2824;
+        padding: 1.5rem;
+        border-radius: 1.5rem;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        font-weight: 500;
+        line-height: 2rem;
+        word-break: break-word;
+        font-family: "Fira Mono", "Courier New", monospace;
+        color: #cfe6e1;
+      }
+
+      .typed-words {
+        color: #a5f0c0;
+        text-decoration: underline;
+        text-underline-offset: 6px;
+        text-decoration-thickness: 2px;
+        text-decoration-color: #f5bc70;
+      }
+
+      .current-word {
+        background: #2a5a50;
+        display: inline-block;
+        padding: 0 8px;
+        border-radius: 20px;
+        color: #ffefb9;
+        box-shadow: 0 0 0 2px #ffcf7a;
+      }
+
+      .remaining {
+        color: #bdd8d2;
+      }
+
+      /* ===== INPUT AREA ===== */
+      .input-guard {
+        background: #0e2824;
+        border-radius: 3rem;
+        padding: 1rem 1.5rem;
+        font-size: 1.3rem;
+        font-family: monospace;
+        letter-spacing: 1px;
+        border: 2px solid #ffd966;
+        color: #fbe5a2;
+        text-align: center;
+        margin-bottom: 1rem;
+        cursor: text;
+      }
+
+      .current-input {
+        font-weight: bold;
+        background: #00000044;
+        padding: 8px 16px;
+        border-radius: 40px;
+        display: inline-block;
+        font-size: 1.4rem;
+      }
+
+      /* Hidden input untuk mobile */
+      #mobileInput {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+        width: 1px;
+        height: 1px;
+        top: 0;
+        left: 0;
+      }
+
+      /* ===== MOBILE TAP TO TYPE BUTTON ===== */
+      .mobile-tap-btn {
+        display: none;
+        width: 100%;
+        background: #2a5a50;
+        border: 2px dashed #ffd96688;
+        border-radius: 2rem;
+        padding: 1rem;
+        color: #ffd966;
+        font-size: 1rem;
+        font-weight: bold;
+        font-family: inherit;
+        cursor: pointer;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .mobile-tap-btn:active {
+        background: #3a7060;
+      }
+
+      @media (hover: none) and (pointer: coarse) {
+        .mobile-tap-btn {
+          display: block;
+        }
+      }
+
+      /* ===== INFO / STATUS ===== */
+      .info-message {
+        text-align: center;
+        font-weight: bold;
+        background: #1e3b35;
+        padding: 0.6rem;
+        border-radius: 2rem;
+        margin: 12px 0;
+        color: #f9d371;
+        white-space: pre-line;
+      }
+
+      .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 15px;
+        flex-wrap: wrap;
+      }
+
+      .game-btn {
+        background: #3f685f;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 40px;
+        font-weight: bold;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 0.9rem;
+        transition: 0.1s linear;
+        color: white;
+      }
+
+      .game-btn.danger {
+        background: #9e4a3a;
+      }
+      .game-btn.success {
+        background: #47997e;
+      }
+
+      .timer-box {
+        font-size: 1.9rem;
+        font-family: monospace;
+        font-weight: bold;
+        background: #00000066;
+        display: inline-block;
+        padding: 0 20px;
+        border-radius: 60px;
+      }
+
+      /* Time freeze pulse */
+      .timer-box.frozen {
+        animation: timerPulse 0.5s ease-in-out infinite alternate;
+        border: 2px solid #5af;
+        color: #7df;
+      }
+      @keyframes timerPulse {
+        from {
+          box-shadow: 0 0 0 0 #5af4;
+        }
+        to {
+          box-shadow: 0 0 12px 4px #5af4;
+        }
+      }
+
+      /* ===== COIN FLOAT ANIMATION ===== */
+      .coin-float {
+        position: fixed;
+        pointer-events: none;
+        font-weight: 900;
+        font-size: 1.3rem;
+        color: #ffd966;
+        text-shadow: 0 2px 8px #b97f10;
+        z-index: 9999;
+        animation: coinFly 1.4s ease-out forwards;
+        white-space: nowrap;
+      }
+
+      @keyframes coinFly {
+        0% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+        60% {
+          opacity: 1;
+          transform: translateY(-60px) scale(1.2);
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(-120px) scale(0.8);
+        }
+      }
+
+      /* ===== COMBO PULSE ===== */
+      @keyframes comboPop {
+        0% {
+          transform: scale(1);
+        }
+        30% {
+          transform: scale(1.25);
+        }
+        60% {
+          transform: scale(0.95);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .combo-pop {
+        animation: comboPop 0.3s ease;
+      }
+
+      /* ===== RANK BADGE ===== */
+      .rank-badge {
+        background: #1a3c36;
+        border-radius: 2rem;
+        padding: 0.5rem 1.2rem;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #a5f0c0;
+        border: 2px solid #a5f0c033;
+        text-align: center;
+      }
+
+      footer {
+        font-size: 0.7rem;
+        text-align: center;
+        color: #b7cfc7;
+        margin-top: 20px;
+      }
+
+      /* ===== RESPONSIVE ===== */
+      @media (max-width: 600px) {
+        body {
+          padding: 10px;
+          align-items: flex-start;
+        }
+        .game-container {
+          border-radius: 1.5rem;
+          padding: 1rem;
+        }
+        .stats-panel {
+          padding: 0.6rem 0.8rem;
+          gap: 8px;
+        }
+        .stat {
+          padding: 0.4rem 0.8rem;
+          gap: 6px;
+        }
+        .stat span:first-child {
+          font-size: 0.8rem;
+        }
+        .stat .value {
+          font-size: 1.2rem;
+        }
+        .sentence-display {
+          font-size: 1.1rem;
+          line-height: 1.7rem;
+          padding: 1rem;
+        }
+        .input-guard {
+          font-size: 1rem;
+          padding: 0.8rem 1rem;
+        }
+        .current-input {
+          font-size: 1.1rem;
+          padding: 6px 12px;
+        }
+        .shop-btn {
+          font-size: 0.78rem;
+          padding: 8px 12px;
+        }
+        .typing-area {
+          padding: 1rem;
+        }
+        .combo-display,
+        .wpm-display,
+        .rank-badge {
+          font-size: 0.85rem;
+          padding: 0.4rem 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="game-container">
+      <!-- STATS PANEL -->
+      <div class="stats-panel">
+        <div class="stat">
+          <span>💰 Koin</span><span class="value" id="coinAmount">0</span>
+        </div>
+        <div class="stat">
+          <span>🔑 Kunci</span><span class="value" id="keyAmount">0</span>
+        </div>
+        <div class="stat">
+          <span>⚡ Booster</span
+          ><span class="value" id="boosterStatus">Tidak Aktif</span>
+        </div>
+        <div class="stat">
+          <span>⌛ Waktu</span
+          ><span class="value timer-box" id="timerDisplay">0.0</span>
+        </div>
+        <div class="stat">
+          <span>✍️ Huruf</span><span class="value" id="letterCount">0</span>
+        </div>
+      </div>
+
+      <!-- COMBO + WPM + RANK ROW -->
+      <div class="combo-bar">
+        <div class="combo-display" id="comboDisplay">🎯 Combo x1</div>
+        <div class="wpm-display" id="wpmDisplay">📊 WPM: 0</div>
+        <div class="rank-badge" id="rankDisplay">🏅 Best WPM: 0</div>
+      </div>
+
+      <!-- SHOP -->
+      <div class="shop">
+        <button class="shop-btn" id="buyKeyBtn">🔑 KUNCI (10💰)</button>
+        <button class="shop-btn" id="buyBoosterBtn">⚡ BOOSTER (20💰)</button>
+        <button class="shop-btn" id="buyFreezeBtn">
+          ❄️ TIME FREEZE (15💰)
+        </button>
+        <button class="shop-btn" id="buyRevealBtn">🔍 REVEAL (8💰)</button>
+        <button class="shop-btn" id="buySkipBtn">⏭️ SKIP (12💰)</button>
+      </div>
+
+      <!-- TYPING AREA -->
+      <div class="typing-area">
+        <input
+          type="text"
+          id="mobileInput"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          aria-label="Input ketik mobile"
+        />
+
+        <div class="sentence-display" id="sentenceDisplay"></div>
+
+        <button class="mobile-tap-btn" id="mobileTapBtn">
+          👆 Tap di sini untuk mengetik
+        </button>
+
+        <div class="input-guard" id="inputGuard">
+          🎯 Ketik kata saat ini:
+          <span class="current-input" id="currentWordInput">_</span>
+        </div>
+        <div class="info-message" id="gameStatusMsg">
+          ✨ Tekan tombol huruf untuk mulai! ✨
+        </div>
+        <div class="action-buttons">
+          <button class="game-btn" id="newGameBtn">
+            🔄 GAME BARU (Reset Progress)
+          </button>
+          <button class="game-btn success" id="useKeyBtn" style="display: none">
+            🔓 PAKAI KUNCI (Lanjut)
+          </button>
+        </div>
+      </div>
+
+      <footer>
+        ⚡ Setiap huruf benar = 1 koin + bonus waktu. Combo kata beruntun =
+        multiplier koin!<br />
+        🚫 Salah satu huruf = GAGAL. Pakai Kunci untuk lanjut tanpa reset
+        koin.<br />
+        ❄️ Time Freeze hentikan timer 5 detik. ⏭️ Skip ganti kalimat tanpa
+        gagal. 🔍 Reveal perjelas kata.<br />
+        🧠 Booster PERMANEN (×2) cukup beli sekali! 💾 Game otomatis tersimpan.
+      </footer>
+    </div>
+
+    <script>
+      // ============================================================
+      //  SENTENCE POOL
+      // ============================================================
+      const SENTENCE_POOL = [
+        "hari ini cuaca sangat cerah",
+        "kucing kecil itu suka bermain bola",
+        "pagi hari aku minum kopi hitam",
+        "belajar javascript itu menyenangkan",
+        "rumah baru dekat taman kota",
+        "matahari terbit di timur dengan indah",
+        "sepeda merah melaju cepat",
+        "nenek memasak rendang enak",
+        "pemandangan gunung sangat menakjubkan",
+        "adik belajar menulis puisi",
+        "komputerku menyala dengan kencang",
+        "burung camar terbang bebas di pantai",
+        "fachrur balapan sama tukang cilok",
+        "fachrur berantem sama kucing",
+        "bunaya foto bareng pak cepi",
+        "bunaya sayang pak sidik",
+        "fachrur ganteng gak ada dua nya",
+      ];
+
+      // ============================================================
+      //  RANK CONFIG
+      // ============================================================
+      const RANKS = [
+        { min: 0, label: "🐢 Pemula", color: "#b7cfc7" },
+        { min: 20, label: "🐇 Menengah", color: "#a5f0c0" },
+        { min: 40, label: "⚡ Expert", color: "#ffd966" },
+        { min: 60, label: "🚀 Master", color: "#ff9900" },
+      ];
+
+      function getRank(wpm) {
+        let r = RANKS[0];
+        for (let i = RANKS.length - 1; i >= 0; i--) {
+          if (wpm >= RANKS[i].min) {
+            r = RANKS[i];
+            break;
+          }
+        }
+        return r;
+      }
+
+      // ============================================================
+      //  GLOBAL STATE
+      // ============================================================
+      let globalCoins = 50;
+      let globalKeys = 2;
+      let boosterPurchased = false;
+      let boosterActive = false;
+      let bestWPM = 0;
+
+      // Combo
+      let comboCount = 0; // kata beruntun benar
+      let comboMultiplier = 1; // 1, 1.5, 2, 3
+
+      // Time Freeze
+      let freezeActive = false;
+      let freezeTimeout = null;
+
+      // Reveal
+      let revealActive = false;
+
+      // Game state
+      let currentGameActive = false;
+      let gameFailed = false;
+      let currentSentences = [];
+      let currentSentenceIdx = 0;
+      let expectedWords = [];
+      let typedWordsHistory = [];
+      let currentWordTyping = "";
+      let currentWordIndex = 0;
+      let currentCharIndex = 0;
+      let totalLettersTyped = 0;
+      let startTime = null;
+      let timerInterval = null;
+      let elapsedSeconds = 0;
+
+      // ============================================================
+      //  DOM REFS
+      // ============================================================
+      const coinSpan = document.getElementById("coinAmount");
+      const keySpan = document.getElementById("keyAmount");
+      const boosterSpan = document.getElementById("boosterStatus");
+      const timerDisplaySpan = document.getElementById("timerDisplay");
+      const letterCountSpan = document.getElementById("letterCount");
+      const sentenceDisplayDiv = document.getElementById("sentenceDisplay");
+      const currentWordInputSpan = document.getElementById("currentWordInput");
+      const gameStatusMsg = document.getElementById("gameStatusMsg");
+      const newGameBtn = document.getElementById("newGameBtn");
+      const useKeyBtn = document.getElementById("useKeyBtn");
+      const buyKeyBtn = document.getElementById("buyKeyBtn");
+      const buyBoosterBtn = document.getElementById("buyBoosterBtn");
+      const buyFreezeBtn = document.getElementById("buyFreezeBtn");
+      const buyRevealBtn = document.getElementById("buyRevealBtn");
+      const buySkipBtn = document.getElementById("buySkipBtn");
+      const comboDisplayEl = document.getElementById("comboDisplay");
+      const wpmDisplayEl = document.getElementById("wpmDisplay");
+      const rankDisplayEl = document.getElementById("rankDisplay");
+      const mobileInput = document.getElementById("mobileInput");
+      const mobileTapBtn = document.getElementById("mobileTapBtn");
+      const inputGuard = document.getElementById("inputGuard");
+
+      // ============================================================
+      //  SAVE / LOAD
+      // ============================================================
+      function saveGameToLocalStorage() {
+        const saveData = {
+          globalCoins,
+          globalKeys,
+          boosterPurchased,
+          bestWPM,
+          currentGameActive,
+          gameFailed,
+          currentSentences,
+          currentSentenceIdx,
+          typedWordsHistory,
+          currentWordTyping,
+          currentWordIndex,
+          currentCharIndex,
+          totalLettersTyped,
+          elapsedSeconds,
+          startTime: startTime ? startTime : null,
+          expectedWords,
+          comboCount,
+          comboMultiplier,
+        };
+        try {
+          localStorage.setItem(
+            "typingCoinRushAutoSave",
+            JSON.stringify(saveData),
+          );
+        } catch (e) {}
+      }
+
+      function loadGameFromLocalStorage() {
+        const raw = localStorage.getItem("typingCoinRushAutoSave");
+        if (!raw) return false;
+        try {
+          const d = JSON.parse(raw);
+          globalCoins = d.globalCoins ?? 50;
+          globalKeys = d.globalKeys ?? 2;
+          boosterPurchased = d.boosterPurchased ?? false;
+          bestWPM = d.bestWPM ?? 0;
+          currentGameActive = d.currentGameActive;
+          gameFailed = d.gameFailed;
+          currentSentences = d.currentSentences;
+          currentSentenceIdx = d.currentSentenceIdx;
+          typedWordsHistory = d.typedWordsHistory;
+          currentWordTyping = d.currentWordTyping;
+          currentWordIndex = d.currentWordIndex;
+          currentCharIndex = d.currentCharIndex;
+          totalLettersTyped = d.totalLettersTyped;
+          elapsedSeconds = d.elapsedSeconds;
+          expectedWords = d.expectedWords;
+          comboCount = d.comboCount ?? 0;
+          comboMultiplier = d.comboMultiplier ?? 1;
+          if (d.startTime !== null && currentGameActive && !gameFailed) {
+            startTime = Date.now() - elapsedSeconds * 1000;
+          } else {
+            startTime = null;
+          }
+          return true;
+        } catch (e) {
+          console.warn("Gagal load save", e);
+          return false;
+        }
+      }
+
+      function autoSave() {
+        saveGameToLocalStorage();
+      }
+
+      // ============================================================
+      //  COIN FLOAT ANIMATION
+      // ============================================================
+      function spawnCoinFloat(text) {
+        const el = document.createElement("div");
+        el.className = "coin-float";
+        el.innerText = text;
+        // posisi relatif ke stat koin
+        const rect = coinSpan.getBoundingClientRect();
+        el.style.left = rect.left + rect.width / 2 + "px";
+        el.style.top = rect.top + window.scrollY + "px";
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 1500);
+      }
+
+      // ============================================================
+      //  COMBO LOGIC
+      // ============================================================
+      function getComboMultiplier(count) {
+        if (count >= 8) return 3;
+        if (count >= 4) return 2;
+        if (count >= 2) return 1.5;
+        return 1;
+      }
+
+      function updateComboDisplay() {
+        const multi = getComboMultiplier(comboCount);
+        let label = `🎯 Combo x${multi === 1 ? "1" : multi}`;
+        if (comboCount >= 2) label = `🔥 Combo x${multi} (${comboCount} kata)`;
+        comboDisplayEl.innerText = label;
+        comboDisplayEl.className = "combo-display";
+        if (comboCount >= 8) comboDisplayEl.classList.add("combo-x3");
+        else if (comboCount >= 4) comboDisplayEl.classList.add("combo-x2");
+        else if (comboCount >= 2) comboDisplayEl.classList.add("combo-active");
+
+        // pop animation
+        comboDisplayEl.classList.remove("combo-pop");
+        void comboDisplayEl.offsetWidth;
+        comboDisplayEl.classList.add("combo-pop");
+      }
+
+      function resetCombo() {
+        comboCount = 0;
+        comboMultiplier = 1;
+        comboDisplayEl.className = "combo-display";
+        comboDisplayEl.innerText = "🎯 Combo x1";
+      }
+
+      function incrementCombo() {
+        comboCount++;
+        comboMultiplier = getComboMultiplier(comboCount);
+        updateComboDisplay();
+      }
+
+      // ============================================================
+      //  WPM CALCULATION
+      // ============================================================
+      function calcWPM(letters, seconds) {
+        if (seconds <= 0 || letters === 0) return 0;
+        const words = letters / 5;
+        const minutes = seconds / 60;
+        return Math.round(words / minutes);
+      }
+
+      function updateWPMDisplay() {
+        if (!startTime || !currentGameActive) return;
+        const elapsed = (Date.now() - startTime) / 1000;
+        const wpm = calcWPM(totalLettersTyped, elapsed);
+        wpmDisplayEl.innerText = `📊 WPM: ${wpm}`;
+      }
+
+      function updateRankDisplay() {
+        const rank = getRank(bestWPM);
+        rankDisplayEl.innerText = `${rank.label} | Best: ${bestWPM}`;
+        rankDisplayEl.style.color = rank.color;
+      }
+
+      // ============================================================
+      //  SHOP UI
+      // ============================================================
+      function updateShopUI() {
+        coinSpan.innerText = globalCoins;
+        keySpan.innerText = globalKeys;
+        if (boosterPurchased) {
+          boosterSpan.innerText = "✅ PERMANEN (x2)";
+          boosterActive = true;
+          buyBoosterBtn.disabled = true;
+        } else {
+          boosterSpan.innerText = "Tidak Aktif";
+          boosterActive = false;
+          buyBoosterBtn.disabled = false;
+        }
+        // freeze btn feedback
+        buyFreezeBtn.disabled = freezeActive;
+        updateRankDisplay();
+        autoSave();
+      }
+
+      // ============================================================
+      //  BONUS CALC
+      // ============================================================
+      function calculateBonus(lettersTyped, secondsElapsed) {
+        if (lettersTyped === 0) return 0;
+        let diff = Math.abs(secondsElapsed - lettersTyped);
+        let ratio = Math.min(1, diff / lettersTyped);
+        return Math.floor(lettersTyped * (1 - ratio));
+      }
+
+      // ============================================================
+      //  GAME FINISH
+      // ============================================================
+      function finishGameSuccess() {
+        if (!currentGameActive && !gameFailed) return;
+        if (timerInterval) clearInterval(timerInterval);
+
+        const elapsed = startTime
+          ? (Date.now() - startTime) / 1000
+          : elapsedSeconds;
+        const finalWPM = calcWPM(totalLettersTyped, elapsed);
+        if (finalWPM > bestWPM) bestWPM = finalWPM;
+
+        const bonus = calculateBonus(totalLettersTyped, elapsed);
+        const baseCoins = totalLettersTyped;
+        const totalEarn = baseCoins + bonus;
+        // Apply combo multiplier on top of booster
+        const finalMultiplier = comboMultiplier * (boosterPurchased ? 2 : 1);
+        const finalEarn = Math.floor(totalEarn * finalMultiplier);
+
+        globalCoins += finalEarn;
+
+        const rankNow = getRank(finalWPM);
+        const comboNote =
+          comboMultiplier > 1 ? ` × Combo(${comboMultiplier})` : "";
+        const boostNote = boosterPurchased ? " × Booster(x2)" : "";
+
+        gameStatusMsg.innerText =
+          `🎉 SELESAI! 🎉\n` +
+          `Huruf: ${baseCoins} koin | Bonus waktu: +${bonus}\n` +
+          `${comboNote}${boostNote}\n` +
+          `+${finalEarn} koin total! | WPM: ${finalWPM} ${rankNow.label}`;
+
+        spawnCoinFloat(`+${finalEarn} 💰`);
+
+        currentGameActive = false;
+        gameFailed = false;
+        resetCombo();
+        updateShopUI();
+        renderSentenceDisplay();
+        currentWordInputSpan.innerText = "---";
+        wpmDisplayEl.innerText = `📊 WPM: ${finalWPM}`;
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = null;
+        startTime = null;
+        autoSave();
+      }
+
+      // ============================================================
+      //  FAIL
+      // ============================================================
+      function failGame() {
+        if (!currentGameActive || gameFailed) return;
+        currentGameActive = false;
+        gameFailed = true;
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = null;
+        resetCombo();
+        gameStatusMsg.innerHTML = `💀 GAGAL! Salah ketik huruf. 💀<br>🔑 Gunakan kunci untuk lanjut ke kalimat random baru tanpa reset koin.`;
+        useKeyBtn.style.display = "inline-block";
+        renderSentenceDisplay();
+        autoSave();
+      }
+
+      // ============================================================
+      //  USE KEY
+      // ============================================================
+      function useKeyAndContinue() {
+        if (!gameFailed) return;
+        if (globalKeys <= 0) {
+          gameStatusMsg.innerText =
+            "❌ Tidak punya kunci! Mulai game baru untuk bermain lagi.";
+          return;
+        }
+        globalKeys--;
+        updateShopUI();
+        const newSentence = getRandomSentenceDifferentFromCurrent();
+        currentSentences[currentSentenceIdx] = newSentence;
+        loadCurrentSentenceWords();
+        gameFailed = false;
+        currentGameActive = true;
+        if (startTime !== null && timerInterval === null) startTimerLoop();
+        gameStatusMsg.innerHTML =
+          "🔓 Kunci terpakai! Lanjutkan mengetik kalimat baru.";
+        useKeyBtn.style.display = "none";
+        renderSentenceDisplay();
+        updateCurrentWordDisplay();
+        focusMobileInput();
+        autoSave();
+      }
+
+      // ============================================================
+      //  BUY ITEMS
+      // ============================================================
+      function buyKey() {
+        if (globalCoins >= 10) {
+          globalCoins -= 10;
+          globalKeys++;
+          updateShopUI();
+          gameStatusMsg.innerHTML =
+            "🔑 Kunci berhasil dibeli! Gunakan saat gagal.";
+        } else {
+          gameStatusMsg.innerHTML =
+            "💰 Koin tidak cukup! Main dulu untuk dapat koin.";
+        }
+      }
+
+      function buyBooster() {
+        if (boosterPurchased) {
+          gameStatusMsg.innerHTML =
+            "⚡ Booster sudah dibeli sebelumnya! Efek permanen aktif.";
+          return;
+        }
+        if (globalCoins >= 20) {
+          globalCoins -= 20;
+          boosterPurchased = true;
+          updateShopUI();
+          gameStatusMsg.innerHTML =
+            "✨ BOOSTER PERMANEN AKTIF! Semua koin yang didapat akan SELALU x2 ✨";
+        } else {
+          gameStatusMsg.innerHTML =
+            "💰 Koin tidak cukup untuk membeli booster!";
+        }
+      }
+
+      function buyFreeze() {
+        if (freezeActive) {
+          gameStatusMsg.innerHTML = "❄️ Time Freeze sudah aktif!";
+          return;
+        }
+        if (!currentGameActive) {
+          gameStatusMsg.innerHTML = "⚠️ Aktifkan saat game sedang berjalan!";
+          return;
+        }
+        if (globalCoins < 15) {
+          gameStatusMsg.innerHTML = "💰 Koin tidak cukup untuk Time Freeze!";
+          return;
+        }
+        globalCoins -= 15;
+        freezeActive = true;
+        updateShopUI();
+
+        // Pause timer: simpan elapsed, berhentikan interval
+        const pausedElapsed = (Date.now() - startTime) / 1000;
+        clearInterval(timerInterval);
+        timerDisplaySpan.classList.add("frozen");
+        gameStatusMsg.innerHTML =
+          "❄️ TIME FREEZE! Timer berhenti selama 5 detik!";
+
+        freezeTimeout = setTimeout(() => {
+          // Lanjutkan timer dari posisi yang dipause
+          startTime = Date.now() - pausedElapsed * 1000;
+          elapsedSeconds = pausedElapsed;
+          freezeActive = false;
+          timerDisplaySpan.classList.remove("frozen");
+          buyFreezeBtn.disabled = false;
+          startTimerLoop();
+          gameStatusMsg.innerHTML = "⏱️ Timer kembali berjalan!";
+          autoSave();
+        }, 5000);
+        autoSave();
+      }
+
+      function buyReveal() {
+        if (globalCoins < 8) {
+          gameStatusMsg.innerHTML = "💰 Koin tidak cukup untuk Reveal!";
+          return;
+        }
+        if (!currentGameActive) {
+          gameStatusMsg.innerHTML = "⚠️ Aktifkan saat game sedang berjalan!";
+          return;
+        }
+        globalCoins -= 8;
+        revealActive = true;
+        updateShopUI();
+        renderSentenceDisplay();
+        gameStatusMsg.innerHTML =
+          "🔍 REVEAL aktif! Kata saat ini diperjelas selama 3 detik.";
+        setTimeout(() => {
+          revealActive = false;
+          renderSentenceDisplay();
+        }, 3000);
+      }
+
+      function buySkip() {
+        if (globalCoins < 12) {
+          gameStatusMsg.innerHTML = "💰 Koin tidak cukup untuk Skip!";
+          return;
+        }
+        if (!currentGameActive) {
+          gameStatusMsg.innerHTML = "⚠️ Aktifkan saat game sedang berjalan!";
+          return;
+        }
+        globalCoins -= 12;
+        updateShopUI();
+        const newSentence = getRandomSentenceDifferentFromCurrent();
+        currentSentences[currentSentenceIdx] = newSentence;
+        loadCurrentSentenceWords();
+        renderSentenceDisplay();
+        updateCurrentWordDisplay();
+        gameStatusMsg.innerHTML = "⏭️ Kalimat diganti! Lanjutkan mengetik.";
+        autoSave();
+      }
+
+      // ============================================================
+      //  SENTENCE HELPERS
+      // ============================================================
+      function getRandomSentenceDifferentFromCurrent() {
+        let current = currentSentences[currentSentenceIdx];
+        let newSentence;
+        do {
+          newSentence =
+            SENTENCE_POOL[Math.floor(Math.random() * SENTENCE_POOL.length)];
+        } while (newSentence === current && SENTENCE_POOL.length > 1);
+        return newSentence;
+      }
+
+      function loadCurrentSentenceWords() {
+        let sentence = currentSentences[currentSentenceIdx];
+        expectedWords = sentence.trim().split(/\s+/);
+        typedWordsHistory = [];
+        currentWordTyping = "";
+        currentWordIndex = 0;
+        currentCharIndex = 0;
+      }
+
+      // ============================================================
+      //  RENDER
+      // ============================================================
+      function renderSentenceDisplay() {
+        if (!expectedWords || expectedWords.length === 0) {
+          sentenceDisplayDiv.innerText = "[Memuat kalimat...]";
+          return;
+        }
+        let html = "";
+        for (let i = 0; i < typedWordsHistory.length; i++) {
+          html += `<span class="typed-words">${typedWordsHistory[i]}</span> `;
+        }
+        if (currentWordIndex < expectedWords.length) {
+          const currentTargetWord = expectedWords[currentWordIndex];
+          let displayWord = "";
+          if (revealActive) {
+            // Reveal: tampilkan kata penuh dengan highlight besar
+            const typed = currentWordTyping;
+            const rem = currentTargetWord.substring(currentCharIndex);
+            displayWord = `<span style="background:#ffd96666;padding:0 4px;border-radius:12px;font-size:1.8rem;">${typed}</span>`;
+            displayWord += `<span style="background:#a5f0c055;padding:0 4px;border-radius:12px;font-size:1.8rem;">${rem}</span>`;
+          } else if (currentCharIndex > 0) {
+            const typedPart = currentWordTyping;
+            const remainingPart = currentTargetWord.substring(currentCharIndex);
+            displayWord = `<span style="background:#ffd96633;padding:0 4px;border-radius:12px;">${typedPart}</span><span style="opacity:0.7;">${remainingPart}</span>`;
+          } else {
+            displayWord = currentTargetWord;
+          }
+          html += `<span class="current-word">${displayWord}</span> `;
+          for (let j = currentWordIndex + 1; j < expectedWords.length; j++) {
+            html += `<span class="remaining">${expectedWords[j]}</span> `;
+          }
+        }
+        sentenceDisplayDiv.innerHTML = html;
+      }
+
+      function updateCurrentWordDisplay() {
+        if (!currentGameActive && !gameFailed) {
+          currentWordInputSpan.innerText = "⚠️ Game tidak aktif";
+          return;
+        }
+        if (currentWordIndex < expectedWords.length) {
+          const target = expectedWords[currentWordIndex];
+          const progress = currentWordTyping;
+          currentWordInputSpan.innerText =
+            progress + (progress.length < target.length ? "▮" : "");
+        } else {
+          currentWordInputSpan.innerText = "✔️";
+        }
+      }
+
+      // ============================================================
+      //  TIMER
+      // ============================================================
+      function startTimerLoop() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+          if (currentGameActive && !gameFailed && startTime && !freezeActive) {
+            const secs = (Date.now() - startTime) / 1000;
+            timerDisplaySpan.innerText = secs.toFixed(1);
+            elapsedSeconds = secs;
+            updateWPMDisplay();
+            autoSave();
+          } else if (!currentGameActive && !gameFailed && startTime) {
+            clearInterval(timerInterval);
+          }
+        }, 100);
+      }
+
+      // ============================================================
+      //  ADVANCE SENTENCE
+      // ============================================================
+      function advanceToNextSentence() {
+        currentSentenceIdx++;
+        if (currentSentenceIdx >= currentSentences.length) {
+          finishGameSuccess();
+          return;
+        }
+        loadCurrentSentenceWords();
+        renderSentenceDisplay();
+        updateCurrentWordDisplay();
+        gameStatusMsg.innerText = `✅ Kalimat ${currentSentenceIdx + 1} dari ${currentSentences.length} ✅`;
+        autoSave();
+      }
+
+      // ============================================================
+      //  HANDLE TYPING (core logic)
+      // ============================================================
+      function handleTyping(char) {
+        if (!currentGameActive || gameFailed) return false;
+
+        // Start timer on first char
+        if (startTime === null) {
+          startTime = Date.now();
+          startTimerLoop();
+          autoSave();
+        }
+
+        if (char === " ") {
+          const targetWord = expectedWords[currentWordIndex];
+          if (
+            currentWordTyping === targetWord &&
+            currentWordTyping.length === targetWord.length
+          ) {
+            // Word complete!
+            typedWordsHistory.push(currentWordTyping);
+            currentWordTyping = "";
+            currentWordIndex++;
+            currentCharIndex = 0;
+            incrementCombo();
+
+            // Coin float for each word
+            spawnCoinFloat(`+${targetWord.length} 💰`);
+
+            if (currentWordIndex >= expectedWords.length) {
+              advanceToNextSentence();
+              renderSentenceDisplay();
+              updateCurrentWordDisplay();
+              return true;
+            }
+            renderSentenceDisplay();
+            updateCurrentWordDisplay();
+            gameStatusMsg.innerText = `✅ Kalimat ${currentSentenceIdx + 1}/${currentSentences.length} | 🔥 Combo x${comboMultiplier}`;
+            autoSave();
+            return true;
+          } else {
+            failGame();
+            return false;
+          }
+        }
+
+        const targetWord = expectedWords[currentWordIndex];
+        if (currentCharIndex >= targetWord.length) {
+          failGame();
+          return false;
+        }
+
+        const expectedChar = targetWord[currentCharIndex];
+        if (char.toLowerCase() === expectedChar.toLowerCase()) {
+          currentWordTyping += char;
+          currentCharIndex++;
+          if (/[a-zA-Z]/.test(char)) {
+            totalLettersTyped++;
+            letterCountSpan.innerText = totalLettersTyped;
+          }
+          if (currentCharIndex === targetWord.length) {
+            gameStatusMsg.innerText = `✨ Kata selesai! Tekan SPASI untuk lanjut ✨`;
+          }
+          renderSentenceDisplay();
+          updateCurrentWordDisplay();
+          autoSave();
+          return true;
+        } else {
+          failGame();
+          return false;
+        }
+      }
+
+      // ============================================================
+      //  KEYBOARD (DESKTOP)
+      // ============================================================
+      function onKeyDown(e) {
+        // Abaikan jika focus di mobileInput (sudah ditangani handler sendiri)
+        if (document.activeElement === mobileInput) return;
+
+        if (
+          [
+            "Backspace",
+            "Delete",
+            "ArrowLeft",
+            "ArrowRight",
+            "ArrowUp",
+            "ArrowDown",
+          ].includes(e.key)
+        ) {
+          e.preventDefault();
+          return;
+        }
+        if (gameFailed) {
+          e.preventDefault();
+          return;
+        }
+        if (!currentGameActive) return;
+        const char = e.key;
+        if (char === " " || char.length === 1) {
+          e.preventDefault();
+          handleTyping(char);
+        }
+      }
+
+      // ============================================================
+      //  MOBILE INPUT
+      // ============================================================
+      let lastMobileVal = "";
+
+      function focusMobileInput() {
+        mobileInput.value = "";
+        lastMobileVal = "";
+        mobileInput.focus();
+      }
+
+      function setupMobileInput() {
+        // Tap-to-type button
+        mobileTapBtn.addEventListener("click", () => {
+          if (currentGameActive && !gameFailed) focusMobileInput();
+        });
+
+        // Tap on input-guard also focuses
+        inputGuard.addEventListener("click", () => {
+          if (currentGameActive && !gameFailed) focusMobileInput();
+        });
+
+        mobileInput.addEventListener("input", () => {
+          const newVal = mobileInput.value;
+          if (!currentGameActive || gameFailed) {
+            mobileInput.value = "";
+            lastMobileVal = "";
+            return;
+          }
+
+          if (newVal.length > lastMobileVal.length) {
+            // Karakter ditambahkan
+            const added = newVal.slice(lastMobileVal.length);
+            for (const ch of added) {
+              handleTyping(ch === " " ? " " : ch);
+            }
+          }
+          // Setelah handle, reset value agar tidak menumpuk (cegah backspace/autocorrect)
+          lastMobileVal = mobileInput.value;
+
+          // Jika game masih aktif, clear value agar input bersih
+          if (currentGameActive && !gameFailed) {
+            mobileInput.value = "";
+            lastMobileVal = "";
+          }
+        });
+
+        // Handle space via keydown on mobile too
+        mobileInput.addEventListener("keydown", (e) => {
+          if (e.key === " ") {
+            e.preventDefault();
+            if (currentGameActive && !gameFailed) handleTyping(" ");
+          }
+          if (
+            [
+              "Backspace",
+              "Delete",
+              "ArrowLeft",
+              "ArrowRight",
+              "ArrowUp",
+              "ArrowDown",
+            ].includes(e.key)
+          ) {
+            e.preventDefault();
+          }
+        });
+      }
+
+      // ============================================================
+      //  NEW GAME
+      // ============================================================
+      function newGame() {
+        if (timerInterval) clearInterval(timerInterval);
+        if (freezeTimeout) clearTimeout(freezeTimeout);
+        timerInterval = null;
+        freezeActive = false;
+        revealActive = false;
+        timerDisplaySpan.classList.remove("frozen");
+
+        const numSentences = Math.floor(Math.random() * 3) + 3;
+        const shuffled = [...SENTENCE_POOL];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        currentSentences = shuffled.slice(0, numSentences);
+        currentSentenceIdx = 0;
+        totalLettersTyped = 0;
+        letterCountSpan.innerText = "0";
+        elapsedSeconds = 0;
+        timerDisplaySpan.innerText = "0.0";
+        startTime = null;
+        gameFailed = false;
+        currentGameActive = true;
+        resetCombo();
+        loadCurrentSentenceWords();
+        renderSentenceDisplay();
+        updateCurrentWordDisplay();
+        wpmDisplayEl.innerText = "📊 WPM: 0";
+        gameStatusMsg.innerHTML = `🎯 Game baru! ${currentSentences.length} kalimat. Mulai ketik! ⏱️`;
+        useKeyBtn.style.display = "none";
+        updateShopUI();
+      }
+
+      // ============================================================
+      //  INIT
+      // ============================================================
+      window.addEventListener("load", () => {
+        const loaded = loadGameFromLocalStorage();
+        if (loaded) {
+          updateShopUI();
+          letterCountSpan.innerText = totalLettersTyped;
+          timerDisplaySpan.innerText = elapsedSeconds.toFixed(1);
+          renderSentenceDisplay();
+          updateCurrentWordDisplay();
+          updateRankDisplay();
+          if (currentGameActive && !gameFailed && startTime !== null) {
+            startTimerLoop();
+          } else if (gameFailed) {
+            useKeyBtn.style.display = "inline-block";
+          } else {
+            useKeyBtn.style.display = "none";
+          }
+          updateComboDisplay();
+          gameStatusMsg.innerHTML = "📀 Save game dimuat! Lanjutkan bermain.";
+        } else {
+          newGame();
+        }
+
+        // Desktop keyboard
+        document.addEventListener("keydown", onKeyDown);
+
+        // Mobile input setup
+        setupMobileInput();
+
+        // Buttons
+        newGameBtn.addEventListener("click", () => {
+          if (
+            confirm(
+              "RESET GAME akan menghapus semua progress (koin, kunci, booster, best WPM). Lanjutkan?",
+            )
+          ) {
+            globalCoins = 50;
+            globalKeys = 2;
+            boosterPurchased = false;
+            bestWPM = 0;
+            if (timerInterval) clearInterval(timerInterval);
+            if (freezeTimeout) clearTimeout(freezeTimeout);
+            newGame();
+            updateShopUI();
+            gameStatusMsg.innerHTML = "Semua data direset! Mulai dari awal.";
+          }
+        });
+
+        useKeyBtn.addEventListener("click", useKeyAndContinue);
+        buyKeyBtn.addEventListener("click", buyKey);
+        buyBoosterBtn.addEventListener("click", buyBooster);
+        buyFreezeBtn.addEventListener("click", buyFreeze);
+        buyRevealBtn.addEventListener("click", buyReveal);
+        buySkipBtn.addEventListener("click", buySkip);
+      });
+
+      // Initial render guard
+      renderSentenceDisplay();
+      updateCurrentWordDisplay();
+    </script>
+  </body>
+</html>
